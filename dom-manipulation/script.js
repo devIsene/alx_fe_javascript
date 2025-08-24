@@ -30,10 +30,10 @@ function showRandomQuote() {
   if (filteredQuotes.length > 0) {
     const randomIndex = Math.floor(Math.random() * filteredQuotes.length);
     const randomQuote = filteredQuotes[randomIndex];
-    quoteDisplay.innerHTML = `"${randomQuote.text}" — ${randomQuote.category}`;
+    quoteDisplay.textContent = `"${randomQuote.text}" — ${randomQuote.category}`;
     sessionStorage.setItem("lastQuote", JSON.stringify(randomQuote));
   } else {
-    quoteDisplay.innerHTML = "No quotes in this category.";
+    quoteDisplay.textContent = "No quotes in this category.";
   }
 }
 
@@ -41,7 +41,7 @@ function showRandomQuote() {
 const lastQuote = sessionStorage.getItem("lastQuote");
 if (lastQuote) {
   const parsedQuote = JSON.parse(lastQuote);
-  quoteDisplay.innerHTML = `"${parsedQuote.text}" — ${parsedQuote.category}`;
+  quoteDisplay.textContent = `"${parsedQuote.text}" — ${parsedQuote.category}`;
 }
 
 // --- Save quotes to localStorage ---
@@ -57,9 +57,9 @@ function addQuote() {
   if (text && category) {
     quotes.push({ text, category });
     saveQuotes();
-    quoteDisplay.innerHTML = `"${text}" — ${category}`;
+    quoteDisplay.textContent = `"${text}" — ${category}`;
 
-    // Refresh categories
+    // Refresh category dropdown
     populateCategories();
 
     // Clear input fields
@@ -84,7 +84,7 @@ function createAddQuoteForm() {
 
   const addButton = document.createElement("button");
   addButton.id = "addQuoteBtn";
-  addButton.innerText = "Add Quote";
+  addButton.textContent = "Add Quote";
   addButton.addEventListener("click", addQuote);
 
   formContainer.appendChild(inputText);
@@ -101,27 +101,29 @@ function populateCategories() {
   // Keep "All Categories" and clear others
   categoryFilter.innerHTML = '<option value="all">All Categories</option>';
 
+  // Extract unique categories
   const categories = [...new Set(quotes.map(q => q.category))];
   categories.forEach(cat => {
     const option = document.createElement("option");
     option.value = cat;
-    option.innerText = cat;
+    option.textContent = cat;  // <-- use textContent
     categoryFilter.appendChild(option);
   });
 
-  // Restore last selected category
+  // Restore last selected category from localStorage
   const lastFilter = localStorage.getItem("lastCategoryFilter");
   if (lastFilter) {
     categoryFilter.value = lastFilter;
-    filterQuotes();
+    filterQuote();
   }
 }
 
 // --- Filter quotes by category ---
-function filterQuotes() {
+function filterQuote() {
   const categoryFilter = document.getElementById("categoryFilter");
   const selectedCategory = categoryFilter.value;
 
+  // Save last selected category to localStorage
   localStorage.setItem("lastCategoryFilter", selectedCategory);
 
   let filteredQuotes = quotes;
@@ -132,10 +134,10 @@ function filterQuotes() {
   if (filteredQuotes.length > 0) {
     const randomIndex = Math.floor(Math.random() * filteredQuotes.length);
     const randomQuote = filteredQuotes[randomIndex];
-    quoteDisplay.innerHTML = `"${randomQuote.text}" — ${randomQuote.category}`;
+    quoteDisplay.textContent = `"${randomQuote.text}" — ${randomQuote.category}`;
     sessionStorage.setItem("lastQuote", JSON.stringify(randomQuote));
   } else {
-    quoteDisplay.innerHTML = "No quotes in this category.";
+    quoteDisplay.textContent = "No quotes in this category.";
   }
 }
 
@@ -173,4 +175,5 @@ function importFromJsonFile(event) {
 createAddQuoteForm();
 populateCategories();
 newQuoteBtn.addEventListener("click", showRandomQuote);
+
 

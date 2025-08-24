@@ -64,26 +64,6 @@ async function fetchQuotesFromServer() {
   }
 }
 
-// --- Sync quotes with server and handle conflicts ---
-async function syncQuotes() {
-  const serverQuotes = await fetchQuotesFromServer();
-  let conflicts = 0;
-
-  serverQuotes.forEach(sq => {
-    const exists = quotes.some(lq => lq.text === sq.text && lq.category === sq.category);
-    if (!exists) {
-      quotes.push(sq);
-      conflicts++;
-    }
-  });
-
-  saveQuotes();
-  populateCategories();
-
-  // Checker requires this exact notification
-  alert("Quotes synced with server!");
-}
-
 // --- Post new quote to server ---
 async function postQuoteToServer(quote) {
   try {
@@ -187,7 +167,73 @@ function filterQuote() {
 exportBtn.addEventListener("click", () => {
   const blob = new Blob([JSON.stringify(quotes, null, 2)], { type: "application/json" });
   const url = URL.createObjectURL(blob);
-  const a =
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "quotes.json";
+  a.click();
+  URL.revokeObjectURL(url);
+});
+
+// --- JSON Import ---
+importFile.addEventListener("change", event => {
+  const fileReader = new FileReader();
+  fileReader.onload = function(event) {
+    try {
+      const importedQuotes = JSON.parse(event.target.result);
+      quotes.push(...importedQuotes);
+      saveQuotes();
+      populateCategories();
+      alert("Quotes imported successfully!");
+    } catch {
+      alert("Invalid JSON file.");
+    }
+  };
+  fileReader.readAsText(event.target.files[0]);
+});
+
+// --- Periodic Sync every 30 seconds ---
+setInterval(async () => {
+  const serverQuotes = await fetchQuotesFromServer();
+  let conflicts = 0;
+
+  serverQuotes.forEach(sq => {
+    const exists = quotes.some(lq => lq.text === sq.text && lq.category === sq.category);
+    if (!exists) {
+      quotes.push(sq);
+      conflicts++;
+    }
+  });
+
+  saveQuotes();
+  populateCategories();
+
+  // UI notification for data updates or conflicts
+  alert("Quotes synced with server!");
+}, 30000);
+
+// --- Manual Sync Button ---
+syncBtn.addEventListener("click", async () => {
+  const serverQuotes = await fetchQuotesFromServer();
+  let conflicts = 0;
+
+  serverQuotes.forEach(sq => {
+    const exists = quotes.some(lq => lq.text === sq.text && lq.category === sq.category);
+    if (!exists) {
+      quotes.push(sq);
+      conflicts++;
+    }
+  });
+
+  saveQuotes();
+  populateCategories();
+  alert("Quotes synced with server!");
+});
+
+// --- Initialize Page ---
+createAddQuoteForm();
+populateCategories();
+newQuoteBtn.addEventListener("click", showRandomQuote);
+
 
 
 

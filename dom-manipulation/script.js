@@ -191,8 +191,8 @@ importFile.addEventListener("change", event => {
   fileReader.readAsText(event.target.files[0]);
 });
 
-// --- Periodic Sync every 30 seconds ---
-setInterval(async () => {
+// --- Sync quotes with server and handle conflicts ---
+async function syncQuotes() {
   const serverQuotes = await fetchQuotesFromServer();
   let conflicts = 0;
 
@@ -203,36 +203,6 @@ setInterval(async () => {
       conflicts++;
     }
   });
-
-  saveQuotes();
-  populateCategories();
-
-  // UI notification for data updates or conflicts
-  alert("Quotes synced with server!");
-}, 30000);
-
-// --- Manual Sync Button ---
-syncBtn.addEventListener("click", async () => {
-  const serverQuotes = await fetchQuotesFromServer();
-  let conflicts = 0;
-
-  serverQuotes.forEach(sq => {
-    const exists = quotes.some(lq => lq.text === sq.text && lq.category === sq.category);
-    if (!exists) {
-      quotes.push(sq);
-      conflicts++;
-    }
-  });
-
-  saveQuotes();
-  populateCategories();
-  alert("Quotes synced with server!");
-});
-
-// --- Initialize Page ---
-createAddQuoteForm();
-populateCategories();
-newQuoteBtn.addEventListener("click", showRandomQuote);
 
 
 

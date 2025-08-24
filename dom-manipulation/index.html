@@ -12,6 +12,12 @@
   <div id="quoteDisplay"></div>
   <button id="newQuote">Show New Quote</button>
 
+  <!-- Category Filter -->
+  <label for="categoryFilter">Filter by Category:</label>
+  <select id="categoryFilter" onchange="filterQuotes()">
+    <option value="all">All Categories</option>
+  </select>
+
   <!-- Export / Import Section -->
   <button id="exportBtn">Export Quotes</button>
   <input type="file" id="importFile" accept=".json" />
@@ -19,5 +25,6 @@
   <script src="script.js"></script>
 </body>
 </html>
+
 
 

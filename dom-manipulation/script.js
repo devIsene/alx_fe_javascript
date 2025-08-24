@@ -5,7 +5,7 @@ let quotes = [
   { text: "Do what you can with what you have where you are.", category: "Inspiration" },
 ];
 
-// --- Server URL (JSONPlaceholder) ---
+// --- Server URL ---
 const SERVER_URL = "https://jsonplaceholder.typicode.com/posts";
 
 // --- Load quotes from localStorage ---
@@ -72,8 +72,7 @@ async function postQuoteToServer(quote) {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ title: quote.text, body: quote.category })
     });
-    const data = await response.json();
-    console.log("Quote posted to server:", data);
+    await response.json();
   } catch (error) {
     console.error("Failed to post quote:", error);
   }
@@ -191,7 +190,7 @@ importFile.addEventListener("change", event => {
   fileReader.readAsText(event.target.files[0]);
 });
 
-// --- Sync quotes with server and handle conflicts ---
+// --- Sync quotes with server ---
 async function syncQuotes() {
   const serverQuotes = await fetchQuotesFromServer();
   let conflicts = 0;
@@ -203,6 +202,27 @@ async function syncQuotes() {
       conflicts++;
     }
   });
+
+  // Update localStorage
+  localStorage.setItem("quotes", JSON.stringify(quotes));
+
+  // Update categories dropdown
+  populateCategories();
+
+  // UI notification
+  alert("Quotes synced with server!");
+}
+
+// --- Periodic sync every 30 seconds ---
+setInterval(syncQuotes, 30000);
+
+// --- Manual Sync Button ---
+syncBtn.addEventListener("click", syncQuotes);
+
+// --- Initialize Page ---
+createAddQuoteForm();
+populateCategories();
+newQuoteBtn.addEventListener("click", showRandomQuote);
 
 
 

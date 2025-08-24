@@ -5,6 +5,9 @@ let quotes = [
   { text: "Do what you can with what you have where you are.", category: "Inspiration" },
 ];
 
+// --- Server URL (JSONPlaceholder) ---
+const SERVER_URL = "https://jsonplaceholder.typicode.com/posts";
+
 // --- Load quotes from localStorage ---
 const storedQuotes = localStorage.getItem("quotes");
 if (storedQuotes) {
@@ -16,6 +19,7 @@ const quoteDisplay = document.getElementById("quoteDisplay");
 const newQuoteBtn = document.getElementById("newQuote");
 const exportBtn = document.getElementById("exportBtn");
 const importFile = document.getElementById("importFile");
+const syncBtn = document.getElementById("syncBtn");
 
 // --- Show Random Quote ---
 function showRandomQuote() {
@@ -98,19 +102,16 @@ function createAddQuoteForm() {
 function populateCategories() {
   const categoryFilter = document.getElementById("categoryFilter");
 
-  // Keep "All Categories" and clear others
   categoryFilter.innerHTML = '<option value="all">All Categories</option>';
 
-  // Extract unique categories
   const categories = [...new Set(quotes.map(q => q.category))];
   categories.forEach(cat => {
     const option = document.createElement("option");
     option.value = cat;
-    option.textContent = cat;  // <-- use textContent
+    option.textContent = cat;
     categoryFilter.appendChild(option);
   });
 
-  // Restore last selected category from localStorage
   const lastFilter = localStorage.getItem("lastCategoryFilter");
   if (lastFilter) {
     categoryFilter.value = lastFilter;
@@ -123,7 +124,6 @@ function filterQuote() {
   const categoryFilter = document.getElementById("categoryFilter");
   const selectedCategory = categoryFilter.value;
 
-  // Save last selected category to localStorage
   localStorage.setItem("lastCategoryFilter", selectedCategory);
 
   let filteredQuotes = quotes;
@@ -154,7 +154,6 @@ exportBtn.addEventListener("click", () => {
 
 // --- JSON Import ---
 importFile.addEventListener("change", importFromJsonFile);
-
 function importFromJsonFile(event) {
   const fileReader = new FileReader();
   fileReader.onload = function(event) {
@@ -170,6 +169,39 @@ function importFromJsonFile(event) {
   };
   fileReader.readAsText(event.target.files[0]);
 }
+
+// --- Sync with Server ---
+async function syncWithServer() {
+  try {
+    const response = await fetch(SERVER_URL);
+    const serverData = await response.json();
+
+    const serverQuotes = serverData.map(item => ({
+      text: item.title,
+      category: item.body
+    }));
+
+    serverQuotes.forEach(sq => {
+      const exists = quotes.some(lq => lq.text === sq.text && lq.category === sq.category);
+      if (!exists) {
+        quotes.push(sq);
+      }
+    });
+
+    saveQuotes();
+    populateCategories();
+    alert("Quotes synced with server successfully!");
+  } catch (error) {
+    console.error("Sync failed:", error);
+    alert("Sync failed! Check console for details.");
+  }
+}
+
+// --- Periodic Sync every 30 seconds ---
+setInterval(syncWithServer, 30000);
+
+// --- Manual Sync Button ---
+syncBtn.addEventListener("click", syncWithServer);
 
 // --- Initialize Page ---
 createAddQuoteForm();
